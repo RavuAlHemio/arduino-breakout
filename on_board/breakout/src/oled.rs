@@ -428,19 +428,14 @@ impl DisplayInterface for ArduinoZeroClick1Interface {
         iopin!(set_high, peripherals, PA, 18);
         iopin!(set_low, peripherals, PA, 4, 14, 20);
 
-        crate::usart::write(peripherals, b"pin setup done\r\n");
-
         // 2. set up SPI
         init_spi(peripherals);
-        crate::usart::write(peripherals, b"SPI setup done\r\n");
 
         // 3. power up display
         iopin!(set_high, peripherals, PA, 14);
-        crate::usart::write(peripherals, b"display has been granted power\r\n");
 
         // 4. stop resetting display
         iopin!(set_high, peripherals, PA, 4);
-        crate::usart::write(peripherals, b"display reset ended\r\n");
 
         // 5. clear out display RAM
         (DisplayCommand::SetColumnAddress { start: 0, end: 127 })
@@ -461,7 +456,6 @@ impl DisplayInterface for ArduinoZeroClick1Interface {
 
         // 7. stop sleeping
         DisplayCommand::DisplayOn.transmit(self, peripherals);
-        crate::usart::write(peripherals, b"sent display-on command\r\n");
     }
 
     fn send(&self, peripherals: &mut Peripherals, command: Option<u8>, data: &[u8]) {
