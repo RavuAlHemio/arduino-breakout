@@ -1,0 +1,9 @@
+[package]
+name = "breakout"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+atsamd21g = { version = "0.12", features = ["rt"] }
+cortex-m = { version = "0.7" }
+cortex-m-rt = { version = "0.7" }
