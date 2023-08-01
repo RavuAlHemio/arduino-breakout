@@ -4,8 +4,10 @@
 
 mod calib;
 mod init;
+mod keypad;
 mod oled;
 mod pin;
+mod spi;
 mod usart;
 
 
@@ -47,10 +49,24 @@ fn main() -> ! {
     // set up SPI and display
     let display = ArduinoZeroClick1Interface;
     display.set_up(&mut peripherals);
+
+    // set up keypad
+    crate::keypad::setup_keypad_pins(&mut peripherals);
+
+    // show image on display
     DisplayCommand::WriteRam.transmit(&display, &mut peripherals);
     let blahaj = include_bytes!("../../../blahaj.bin");
     display.send(&mut peripherals, None, blahaj);
 
     loop {
+        // read keypad state
+        let state = crate::keypad::read_keypad(&mut peripherals);
+        crate::usart::write(&mut peripherals, b"keypad button state: ");
+        state.output_to_uart(&mut peripherals);
+        crate::usart::write(&mut peripherals, b"\r\n");
+
+        for _ in 0..(2*1024*1024) {
+            cortex_m::asm::nop();
+        }
     }
 }

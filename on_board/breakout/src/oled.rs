@@ -6,6 +6,7 @@ use atsamd21g::Peripherals;
 use crate::iopin;
 use crate::init::init_spi;
 use crate::pin::Peripheral;
+use crate::spi::{Sercom1Spi, Spi};
 
 
 /// Low-level interface to the display.
@@ -387,10 +388,9 @@ pub struct ArduinoZeroClick1Interface;
 impl ArduinoZeroClick1Interface {
     /// Transmits data to the display controller. You must pull down the ~CS pin before calling this
     /// function!
-    fn internal_transmit(&self, peripherals: &mut Peripherals, is_command: bool, data: &[u8]) {
+    fn internal_transmit<S: Spi>(&self, spi: &S, peripherals: &mut Peripherals, is_command: bool, data: &[u8]) {
         // wait for SPI shift register to be ready for the next byte
-        while peripherals.SERCOM1.spi().intflag.read().dre().bit_is_clear() {
-        }
+        spi.wait_for_ready(peripherals);
 
         if is_command {
             // pull data/~command pin down
@@ -398,19 +398,7 @@ impl ArduinoZeroClick1Interface {
         }
 
         // send
-        for b in data {
-            unsafe {
-                peripherals.SERCOM1.spi().data.modify(|_, w| w
-                    .data().bits(u16::from(*b))
-                )
-            };
-            while peripherals.SERCOM1.spi().intflag.read().dre().bit_is_clear() {
-            }
-        }
-
-        // wait for transmission to end fully
-        while peripherals.SERCOM1.spi().intflag.read().txc().bit_is_clear() {
-        }
+        spi.send_data(peripherals, data);
 
         // always pull data/~command pin back up
         iopin!(set_high, peripherals, PA, 20);
@@ -459,55 +447,42 @@ impl DisplayInterface for ArduinoZeroClick1Interface {
     }
 
     fn send(&self, peripherals: &mut Peripherals, command: Option<u8>, data: &[u8]) {
-        // wait for SPI shift register to be ready for the next byte
-        while peripherals.SERCOM1.spi().intflag.read().dre().bit_is_clear() {
-        }
+        let spi = Sercom1Spi;
+
+        // wait until the previous transfer ends
+        spi.wait_for_ready(peripherals);
 
         // pin-select the display controller
         iopin!(set_low, peripherals, PA, 18);
 
         if let Some(cmd) = command {
-            self.internal_transmit(peripherals, true, &[cmd]);
+            self.internal_transmit(&spi, peripherals, true, &[cmd]);
         }
-        self.internal_transmit(peripherals, false, data);
+        self.internal_transmit(&spi, peripherals, false, data);
 
         // unselect the display controller
         iopin!(set_high, peripherals, PA, 18);
     }
 
     fn receive(&self, peripherals: &mut Peripherals, command: Option<u8>, buffer: &mut [u8]) {
-        // wait for SPI shift register to be ready for the next byte
-        while peripherals.SERCOM1.spi().intflag.read().dre().bit_is_clear() {
+        let spi = Sercom1Spi;
+
+        // send zeroes
+        for b in &mut *buffer {
+            *b = 0x00;
         }
+
+        // wait until the previous transfer ends
+        spi.wait_for_ready(peripherals);
 
         // pin-select the display controller
         iopin!(set_low, peripherals, PA, 18);
 
         if let Some(cmd) = command {
-            self.internal_transmit(peripherals, true, &[cmd]);
+            self.internal_transmit(&spi, peripherals, true, &[cmd]);
         }
 
-        for b in buffer {
-            // transmit zero byte
-            unsafe {
-                peripherals.SERCOM1.spi().data.modify(|_, w| w
-                    .data().bits(0)
-                )
-            };
-            while peripherals.SERCOM1.spi().intflag.read().dre().bit_is_clear() {
-            }
-
-            // wait until byte has been received
-            while peripherals.SERCOM1.spi().intflag.read().rxc().bit_is_clear() {
-            }
-
-            // read it out
-            *b = (peripherals.SERCOM1.spi().data.read().data().bits() & 0xFF) as u8;
-        }
-
-        // wait for transmission to end fully
-        while peripherals.SERCOM1.spi().intflag.read().txc().bit_is_clear() {
-        }
+        spi.exchange_data(peripherals, buffer);
 
         // unselect the display controller
         iopin!(set_high, peripherals, PA, 18);
