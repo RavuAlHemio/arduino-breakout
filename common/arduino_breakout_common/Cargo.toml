@@ -1,5 +1,5 @@
 [package]
-name = "fixedpoint"
+name = "arduino_breakout_common"
 version = "0.1.0"
 edition = "2021"
 

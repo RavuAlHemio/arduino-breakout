@@ -1,9 +1,6 @@
 //! Implementation of fixed-point arithmetic.
 
 
-#![no_std]
-
-
 use core::ops::{Add, Div, Mul, Sub};
 
 
