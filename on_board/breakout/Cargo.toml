@@ -7,3 +7,4 @@ edition = "2021"
 atsamd21g = { version = "0.12", features = ["rt"] }
 cortex-m = { version = "0.7" }
 cortex-m-rt = { version = "0.7" }
+fixedpoint = { path = "../../common/fixedpoint" }
