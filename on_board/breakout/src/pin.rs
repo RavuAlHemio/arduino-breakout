@@ -1,9 +1,6 @@
 //! Macros to make manipulating digital I/O pins more straightforward.
 
 
-use atsamd21g::port::pmux0_::{PMUXE_A, PMUXO_A};
-
-
 /// One of the peripherals to choose in the peripheral multiplexer.
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[allow(unused)]
