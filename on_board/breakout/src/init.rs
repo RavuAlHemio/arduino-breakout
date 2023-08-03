@@ -265,7 +265,7 @@ pub(crate) fn init_spi(peripherals: &mut Peripherals) {
     //      ~ 2 [round to slower; be conservative]
     unsafe {
         sercom1_spi.baud.modify(|_, w| w
-            .baud().bits(32)
+            .baud().bits(4)
         )
     };
     // (no synchronization)
