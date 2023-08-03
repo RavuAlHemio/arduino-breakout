@@ -1,7 +1,7 @@
 //! Implementation of fixed-point arithmetic.
 
 
-use core::ops::{Add, Div, Mul, Sub};
+use core::ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign};
 
 
 pub type FixedPointValue = i16;
@@ -17,16 +17,35 @@ pub struct FixedPoint {
     value: FixedPointValue,
 }
 impl FixedPoint {
+    #[inline]
     pub const fn new_integer(int: FixedPointIntegerValue) -> Self {
         Self {
             value: (int as FixedPointValue) << EXPONENT
         }
     }
 
+    #[inline]
+    pub const fn new_raw(value: FixedPointValue) -> Self {
+        Self {
+            value,
+        }
+    }
+
+    #[inline]
+    pub const fn zero() -> FixedPoint { FixedPoint { value: 0 } }
+
+    #[inline]
+    pub const fn one() -> FixedPoint { FixedPoint::new_integer(1) }
+
+    #[inline]
     pub const fn as_integer(&self) -> FixedPointIntegerValue {
         (self.value >> EXPONENT) as FixedPointIntegerValue
     }
 
+    #[inline]
+    pub const fn as_raw(&self) -> FixedPointValue { self.value }
+
+    #[inline]
     pub const fn is_integer(&self) -> bool {
         const FRAC_MASK: FixedPointValue = (1 << EXPONENT) - 1;
         (self.value & FRAC_MASK) == 0
@@ -70,6 +89,24 @@ impl Div for FixedPoint {
         let result_quotient = (quotient & MUL_RESULT_MASK) as FixedPointValue;
         FixedPoint { value: result_quotient }
     }
+}
+impl Neg for FixedPoint {
+    type Output = Self;
+    fn neg(self) -> Self::Output {
+        FixedPoint { value: -self.value }
+    }
+}
+impl AddAssign for FixedPoint {
+    fn add_assign(&mut self, rhs: Self) { *self = *self + rhs; }
+}
+impl DivAssign for FixedPoint {
+    fn div_assign(&mut self, rhs: Self) { *self = *self / rhs; }
+}
+impl MulAssign for FixedPoint {
+    fn mul_assign(&mut self, rhs: Self) { *self = *self * rhs; }
+}
+impl SubAssign for FixedPoint {
+    fn sub_assign(&mut self, rhs: Self) { *self = *self - rhs; }
 }
 
 
