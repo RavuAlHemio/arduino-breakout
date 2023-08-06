@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-breakout_common = { path = "../../common/breakout_common" }
 atsamd21g = { version = "0.12", features = ["rt"] }
+breakout_common = { path = "../../common/breakout_common" }
 cortex-m = { version = "0.7" }
 cortex-m-rt = { version = "0.7" }
