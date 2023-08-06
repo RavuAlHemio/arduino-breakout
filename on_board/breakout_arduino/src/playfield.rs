@@ -1,4 +1,4 @@
-use arduino_breakout_common::fixedpoint::FixedPoint;
+use breakout_common::fixedpoint::FixedPoint;
 use atsamd21g::Peripherals;
 
 use crate::oled::{DisplayCommand, DisplayInterface};

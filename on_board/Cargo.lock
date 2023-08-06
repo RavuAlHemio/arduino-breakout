@@ -3,10 +3,6 @@
 version = 3
 
 [[package]]
-name = "arduino_breakout_common"
-version = "0.1.0"
-
-[[package]]
 name = "atsamd21g"
 version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -36,11 +32,15 @@ checksum = "46afbd2983a5d5a7bd740ccb198caf5b82f45c40c09c0eed36052d91cb92e719"
 name = "breakout_arduino"
 version = "0.1.0"
 dependencies = [
- "arduino_breakout_common",
  "atsamd21g",
+ "breakout_common",
  "cortex-m",
  "cortex-m-rt",
 ]
+
+[[package]]
+name = "breakout_common"
+version = "0.1.0"
 
 [[package]]
 name = "cortex-m"

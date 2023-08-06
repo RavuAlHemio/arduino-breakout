@@ -1,4 +1,4 @@
 [workspace]
 members = [
-    "fixedpoint",
+    "breakout_common",
 ]

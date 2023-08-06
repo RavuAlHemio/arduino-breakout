@@ -15,7 +15,7 @@ mod usart;
 
 use core::panic::PanicInfo;
 
-use arduino_breakout_common::fixedpoint::FixedPoint;
+use breakout_common::fixedpoint::FixedPoint;
 use atsamd21g::Peripherals;
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
