@@ -7,7 +7,6 @@ mod init;
 mod keypad;
 mod oled;
 mod pin;
-mod playfield;
 mod spi;
 mod timer;
 mod usart;
@@ -15,13 +14,13 @@ mod usart;
 
 use core::panic::PanicInfo;
 
-use breakout_common::fixedpoint::FixedPoint;
 use atsamd21g::Peripherals;
+use breakout_common::fixedpoint::FixedPoint;
+use breakout_common::playfield::{DISPLAY_BYTES, Playfield};
 use cortex_m::Peripherals as CorePeripherals;
 use cortex_m_rt::{entry, exception};
 
-use crate::oled::{ArduinoZeroClick1Interface, DisplayInterface};
-use crate::playfield::Playfield;
+use crate::oled::{ArduinoZeroClick1Interface, DisplayCommand, DisplayInterface};
 
 
 #[panic_handler]
@@ -162,30 +161,10 @@ fn main() -> ! {
             playfield.advance();
         }
 
-        playfield.draw(&display, &mut peripherals);
-
-        /*
-        let mut ball_x_hex_buf = [0u8; 7];
-        let mut ball_y_hex_buf = [0u8; 7];
-
-        let ball_x_hex = i16_to_hex_bytes(playfield.ball.position.x.as_raw(), &mut ball_x_hex_buf);
-        let ball_y_hex = i16_to_hex_bytes(playfield.ball.position.y.as_raw(), &mut ball_y_hex_buf);
-
-        crate::usart::write(&mut peripherals, b"ball is at (");
-        crate::usart::write(&mut peripherals, ball_x_hex);
-        crate::usart::write(&mut peripherals, b", ");
-        crate::usart::write(&mut peripherals, ball_y_hex);
-        crate::usart::write(&mut peripherals, b")\r\n");
-
-        let ball_x_hex = i16_to_hex_bytes(playfield.ball.velocity.x.as_raw(), &mut ball_x_hex_buf);
-        let ball_y_hex = i16_to_hex_bytes(playfield.ball.velocity.y.as_raw(), &mut ball_y_hex_buf);
-
-        crate::usart::write(&mut peripherals, b"ball is flying (");
-        crate::usart::write(&mut peripherals, ball_x_hex);
-        crate::usart::write(&mut peripherals, b", ");
-        crate::usart::write(&mut peripherals, ball_y_hex);
-        crate::usart::write(&mut peripherals, b")\r\n");
-        */
+        let mut pixbuf = [0u8; DISPLAY_BYTES];
+        playfield.draw(&mut pixbuf);
+        DisplayCommand::WriteRam.transmit(&display, &mut peripherals);
+        display.send(&mut peripherals, None, &pixbuf);
 
         // TODO: delay?
     }

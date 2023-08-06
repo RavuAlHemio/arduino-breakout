@@ -1,11 +1,8 @@
-use breakout_common::fixedpoint::FixedPoint;
-use atsamd21g::Peripherals;
-
-use crate::oled::{DisplayCommand, DisplayInterface};
+use crate::fixedpoint::FixedPoint;
 
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub(crate) struct Vec2 {
+pub struct Vec2 {
     pub x: FixedPoint,
     pub y: FixedPoint,
 }
@@ -23,7 +20,7 @@ impl Vec2 {
 
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
-pub(crate) struct Ball {
+pub struct Ball {
     pub position: Vec2,
     pub velocity: Vec2,
 }
@@ -39,19 +36,19 @@ pub(crate) struct Ball {
 // 1px playfield border
 
 
-const DISPLAY_WIDTH: usize = 96;
-const DISPLAY_HEIGHT: usize = 96;
-const PLAYFIELD_WIDTH: FixedPoint = FixedPoint::new_integer(94);
-const PLAYFIELD_HEIGHT: FixedPoint = FixedPoint::new_integer(85);
-const PLAYFIELD_LEFT: usize = 1;
-const PLAYFIELD_TOP: usize = 10;
+pub const DISPLAY_WIDTH: usize = 96;
+pub const DISPLAY_HEIGHT: usize = 96;
+pub const PLAYFIELD_WIDTH: FixedPoint = FixedPoint::new_integer(94);
+pub const PLAYFIELD_HEIGHT: FixedPoint = FixedPoint::new_integer(85);
+pub const PLAYFIELD_LEFT: usize = 1;
+pub const PLAYFIELD_TOP: usize = 10;
 
-const BYTES_PER_PIXEL: usize = 2; // R5:G6:B5 encoding
-const DISPLAY_ROW_BYTES: usize = DISPLAY_WIDTH * BYTES_PER_PIXEL;
-const DISPLAY_BYTES: usize = DISPLAY_HEIGHT * DISPLAY_ROW_BYTES;
+pub const BYTES_PER_PIXEL: usize = 2; // R5:G6:B5 encoding
+pub const DISPLAY_ROW_BYTES: usize = DISPLAY_WIDTH * BYTES_PER_PIXEL;
+pub const DISPLAY_BYTES: usize = DISPLAY_HEIGHT * DISPLAY_ROW_BYTES;
 
 
-pub(crate) struct Playfield {
+pub struct Playfield {
     pub ball: Ball,
 }
 impl Playfield {
@@ -138,11 +135,11 @@ impl Playfield {
     }
 
     /// Draw the current state of the playfield onto the display.
-    pub fn draw<DI: DisplayInterface>(&self, display_interface: &DI, peripherals: &mut Peripherals) {
-        let mut screen = [0u8; DISPLAY_BYTES];
+    pub fn draw(&self, screen: &mut [u8]) {
+        debug_assert_eq!(screen.len(), DISPLAY_BYTES);
 
         // draw playfield border
-        self.draw_playfield_border(&mut screen);
+        self.draw_playfield_border(screen);
 
         /*
         // draw ball
@@ -152,8 +149,5 @@ impl Playfield {
         field[ball_offset+0] = 0xFF;
         field[ball_offset+1] = 0xFF;
         */
-
-        DisplayCommand::WriteRam.transmit(display_interface, peripherals);
-        display_interface.send(peripherals, None, &screen);
     }
 }
