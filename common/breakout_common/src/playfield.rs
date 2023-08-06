@@ -129,9 +129,34 @@ impl Playfield {
         self.draw_horizontal_line(
             buffer,
             BORDER_LEFT,
-            PLAYFIELD_TOP + (PLAYFIELD_HEIGHT.as_integer() as usize) + 1,
+            PLAYFIELD_TOP + (PLAYFIELD_HEIGHT.as_integer() as usize),
             BORDER_HORIZONTAL_LENGTH,
         );
+
+        // left border
+        self.draw_vertical_line(
+            buffer,
+            BORDER_LEFT,
+            PLAYFIELD_TOP - 1,
+            (PLAYFIELD_HEIGHT.as_integer() as usize) + 1,
+        );
+
+        // right border
+        self.draw_vertical_line(
+            buffer,
+            BORDER_LEFT + (PLAYFIELD_WIDTH.as_integer() as usize) + 1,
+            PLAYFIELD_TOP - 1,
+            (PLAYFIELD_HEIGHT.as_integer() as usize) + 1,
+        );
+    }
+
+    fn draw_ball(&self, buffer: &mut [u8]) {
+        // draw ball
+        let ball_x = PLAYFIELD_LEFT + (self.ball.position.x.as_integer() as usize);
+        let ball_y = PLAYFIELD_TOP + (self.ball.position.y.as_integer() as usize);
+        let ball_offset = ball_y * DISPLAY_ROW_BYTES + ball_x * BYTES_PER_PIXEL;
+        buffer[ball_offset+0] = 0xFF;
+        buffer[ball_offset+1] = 0xFF;
     }
 
     /// Draw the current state of the playfield onto the display.
@@ -141,13 +166,6 @@ impl Playfield {
         // draw playfield border
         self.draw_playfield_border(screen);
 
-        /*
-        // draw ball
-        let ball_x = self.ball.position.x.as_integer() as usize;
-        let ball_y = self.ball.position.y.as_integer() as usize;
-        let ball_offset = ball_y * PLAYFIELD_ROW_ELEMENTS + ball_x * BYTES_PER_PIXEL;
-        field[ball_offset+0] = 0xFF;
-        field[ball_offset+1] = 0xFF;
-        */
+        self.draw_ball(screen);
     }
 }
