@@ -1,0 +1,8 @@
+[package]
+name = "breakout_sdl"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+breakout_common = { path = "../../common/breakout_common" }
+sdl2 = { version = "0.35" }
