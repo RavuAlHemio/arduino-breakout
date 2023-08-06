@@ -1,6 +1,6 @@
 [workspace]
 members = [
-    "breakout",
+    "breakout_arduino",
 ]
 
 [profile.release]

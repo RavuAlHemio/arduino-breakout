@@ -12,7 +12,7 @@ Param (
     $NoBuild,
 
     [string]
-    $BinaryName="breakout",
+    $BinaryName="breakout_arduino",
 
     [switch]
     $ProgramOOCD,
