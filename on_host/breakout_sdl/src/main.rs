@@ -62,9 +62,24 @@ fn main() {
         canvas.clear();
         for event in event_pump.poll_iter() {
             match event {
-                Event::Quit {..} |
-                Event::KeyDown { keycode: Some(Keycode::Escape), .. } => {
+                Event::Quit { .. } => {
                     break 'main_loop;
+                },
+                Event::KeyDown { keycode: keycode_opt, .. } => {
+                    if let Some(keycode) = keycode_opt {
+                        match keycode {
+                            Keycode::Escape => {
+                                break 'main_loop;
+                            },
+                            Keycode::Left => {
+                                playfield.move_paddle_left();
+                            },
+                            Keycode::Right => {
+                                playfield.move_paddle_right();
+                            },
+                            _ => {},
+                        }
+                    }
                 },
                 _ => {}
             }

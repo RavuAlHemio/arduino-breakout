@@ -26,6 +26,13 @@ pub struct Ball {
 }
 
 
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub struct Paddle {
+    pub left_offset: FixedPoint,
+    pub width: FixedPoint,
+}
+
+
 // the display is 96x96
 //
 // by height:
@@ -47,9 +54,13 @@ pub const BYTES_PER_PIXEL: usize = 2; // R5:G6:B5 encoding
 pub const DISPLAY_ROW_BYTES: usize = DISPLAY_WIDTH * BYTES_PER_PIXEL;
 pub const DISPLAY_BYTES: usize = DISPLAY_HEIGHT * DISPLAY_ROW_BYTES;
 
+pub const PADDLE_TOP: usize = (PLAYFIELD_HEIGHT.as_integer() as usize) - 2;
+pub const DEFAULT_PADDLE_WIDTH: FixedPoint = FixedPoint::new_integer(8);
+
 
 pub struct Playfield {
     pub ball: Ball,
+    pub paddle: Paddle,
 }
 impl Playfield {
     pub fn new() -> Self {
@@ -61,7 +72,11 @@ impl Playfield {
                     x: FixedPoint::new_raw(4 * 0b1011_0110),
                     y: FixedPoint::new_raw(4 * 0b1011_0110),
                 },
-            }
+            },
+            paddle: Paddle {
+                left_offset: FixedPoint::new_integer(0),
+                width: DEFAULT_PADDLE_WIDTH,
+            },
         }
     }
 
@@ -159,6 +174,20 @@ impl Playfield {
         buffer[ball_offset+1] = 0xFF;
     }
 
+    fn draw_paddle(&self, buffer: &mut [u8]) {
+        const PADDLE_Y_OFFSET: usize = (PLAYFIELD_TOP + PADDLE_TOP) * DISPLAY_ROW_BYTES;
+        for x in 0..self.paddle.width.as_integer() {
+            let x_in_playfield =
+                PLAYFIELD_LEFT
+                + (self.paddle.left_offset.as_integer() as usize)
+                + (x as usize)
+            ;
+            let paddle_offset = PADDLE_Y_OFFSET + x_in_playfield * BYTES_PER_PIXEL;
+            buffer[paddle_offset+0] = 0xFF;
+            buffer[paddle_offset+1] = 0xFF;
+        }
+    }
+
     /// Draw the current state of the playfield onto the display.
     pub fn draw(&self, screen: &mut [u8]) {
         debug_assert_eq!(screen.len(), DISPLAY_BYTES);
@@ -167,5 +196,20 @@ impl Playfield {
         self.draw_playfield_border(screen);
 
         self.draw_ball(screen);
+        self.draw_paddle(screen);
+    }
+
+    pub fn move_paddle_right(&mut self) {
+        if self.paddle.left_offset + self.paddle.width >= PLAYFIELD_WIDTH {
+            return;
+        }
+        self.paddle.left_offset += FixedPoint::new_integer(1);
+    }
+
+    pub fn move_paddle_left(&mut self) {
+        if self.paddle.left_offset <= FixedPoint::new_integer(0) {
+            return;
+        }
+        self.paddle.left_offset -= FixedPoint::new_integer(1);
     }
 }
